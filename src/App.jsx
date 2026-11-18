@@ -1,3 +1,7 @@
+import { auth, db } from './services/firebase'
+
+console.log(auth, db)
+
 import { useState } from 'react'
 import heroImg from './assets/hero.png'
 import reactLogo from './assets/react.svg'
