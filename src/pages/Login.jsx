@@ -1,67 +1,70 @@
 import { useState } from "react";
-import { auth, googleProvider } from "../services/firebase";
-import { signInWithEmailAndPassword, createUserWithEmailAndPassword, signInWithPopup } from "firebase/auth";
-import { useNavigate } from "react-router-dom";
+import { auth, googleProvider } from "../firebase";
+import { signInWithEmailAndPassword, signInWithPopup } from "firebase/auth";
+import { useNavigate, Link } from "react-router-dom";
 
 export default function Login() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [isRegistering, setIsRegistering] = useState(false);
   const [error, setError] = useState("");
   const navigate = useNavigate();
 
-  const handleEmailAuth = async (e) => {
+  const handleLogin = async (e) => {
     e.preventDefault();
     setError("");
+
     try {
-      if (isRegistering) {
-        await createUserWithEmailAndPassword(auth, email, password);
+      await signInWithEmailAndPassword(auth, email, password);
+      navigate("/");
+    } catch (err) {
+      console.error(err);
+      // Catch the specific Firebase error for login
+      if (err.code === "auth/invalid-credential") {
+        setError("Incorrect email or password. Please try again.");
       } else {
-        await signInWithEmailAndPassword(auth, email, password);
+        setError(err.message);
       }
-      navigate("/"); 
-    } catch (error) {
-      setError(error.message);
     }
   };
 
-  const handleGoogleAuth = async () => {
+  const handleGoogleLogin = async () => {
     setError("");
     try {
       await signInWithPopup(auth, googleProvider);
       navigate("/");
-    } catch (error) {
-      setError(error.message);
+    } catch (err) {
+      setError(err.message);
     }
   };
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-100">
       <div className="bg-white p-8 rounded-lg shadow-lg w-96">
-        <h2 className="text-3xl font-bold mb-6 text-center text-blue-600">BookMyCut</h2>
-        
-        <form onSubmit={handleEmailAuth} className="space-y-4">
-          <input 
-            type="email" 
-            placeholder="Email" 
-            value={email} 
-            onChange={(e) => setEmail(e.target.value)} 
-            className="w-full p-3 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500" 
-            required 
+        <h2 className="text-3xl font-bold mb-2 text-center text-blue-600">Welcome Back</h2>
+        <p className="text-center text-gray-500 text-sm mb-6">Login to book your next cut</p>
+
+        <form onSubmit={handleLogin} className="space-y-4">
+          <input
+            type="email"
+            placeholder="Email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            className="w-full p-3 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
+            required
           />
-          <input 
-            type="password" 
-            placeholder="Password" 
-            value={password} 
-            onChange={(e) => setPassword(e.target.value)} 
-            className="w-full p-3 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500" 
-            required 
+          <input
+            type="password"
+            placeholder="Password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            className="w-full p-3 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
+            required
           />
-          <button 
-            type="submit" 
+          <button
+            type="submit"
             className="w-full bg-blue-600 text-white p-3 rounded font-semibold hover:bg-blue-700 transition"
           >
-            {isRegistering ? "Sign Up" : "Login"}
+            Login
           </button>
         </form>
 
@@ -77,18 +80,18 @@ export default function Login() {
           <div className="flex-grow border-t border-gray-300"></div>
         </div>
 
-        <button 
-          onClick={handleGoogleAuth} 
+        <button
+          onClick={handleGoogleLogin}
           className="w-full bg-white border border-gray-300 text-gray-700 p-3 rounded font-semibold hover:bg-gray-50 transition flex justify-center items-center"
         >
           Sign in with Google
         </button>
 
-        <p 
-          className="mt-6 text-center text-sm cursor-pointer text-blue-600 hover:underline" 
-          onClick={() => setIsRegistering(!isRegistering)}
-        >
-          {isRegistering ? "Already have an account? Login" : "Need an account? Sign Up"}
+        <p className="mt-6 text-center text-sm text-gray-600">
+          Need an account?{" "}
+          <Link to="/signup" className="text-blue-600 hover:underline font-semibold">
+            Sign Up
+          </Link>
         </p>
       </div>
     </div>

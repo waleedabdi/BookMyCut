@@ -1,16 +1,40 @@
-# React + Vite
+# BookMyCut
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+BookMyCut is a React/Vite appointment-booking app backed by Firebase Authentication and Cloud Firestore.
 
-Currently, two official plugins are available:
+## Setup
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+1. Install dependencies:
 
-## React Compiler
+   ```sh
+   npm install
+   ```
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+2. Configure Firebase Admin credentials for the API. Create a service account in Firebase or Google Cloud, download its JSON key outside the repository, and set `GOOGLE_APPLICATION_CREDENTIALS` to its absolute path. The key must not be committed.
 
-## Expanding the ESLint configuration
+   ```sh
+   export GOOGLE_APPLICATION_CREDENTIALS="/absolute/path/to/service-account.json"
+   ```
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+   The project ID defaults to `bookmycut-e54f9`. Override it with `FIREBASE_PROJECT_ID` if using another Firebase project.
+
+3. Start the API and web app together:
+
+   ```sh
+   npm run dev
+   ```
+
+   The API listens on port `5000` by default and Vite proxies `/api` requests to it. Set `PORT` to change it. Browser origins are restricted to the Vite development and preview origins by default; set `CORS_ORIGINS` to a comma-separated allowlist when needed.
+
+   To start only the API:
+
+   ```sh
+   npm run server
+   ```
+
+## Checks
+
+```sh
+npm run build
+npm run lint
+```

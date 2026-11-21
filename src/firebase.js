@@ -5,6 +5,7 @@ import { getFirestore } from "firebase/firestore";
 const firebaseConfig = {
   apiKey: "AIzaSyBL44LYVwGX7_RFlpokONquQ506DyqIogU",
   authDomain: "bookmycut-e54f9.firebaseapp.com",
+  databaseURL: "https://bookmycut-e54f9-default-rtdb.asia-southeast1.firebasedatabase.app",
   projectId: "bookmycut-e54f9",
   storageBucket: "bookmycut-e54f9.firebasestorage.app",
   messagingSenderId: "525054584130",
@@ -15,5 +16,5 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 
 export const auth = getAuth(app);
-export const db = getFirestore(app);
 export const googleProvider = new GoogleAuthProvider();
+export const db = getFirestore(app);
