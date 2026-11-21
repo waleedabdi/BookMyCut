@@ -27,5 +27,3 @@ node_modules
 dist
 server/node_modules
 server/serviceAccountKey.json
-serviceAccountKey.json
-src/server/serviceAccountKey.json
