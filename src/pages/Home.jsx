@@ -102,7 +102,7 @@ export default function Home() {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          "Authorization": `Bearer ${token}`,
+          "Authorization": "Bearer " + token,
         },
         body: JSON.stringify({
           serviceName: selectedService.name,
@@ -191,7 +191,7 @@ export default function Home() {
                   {holidays.slice(0, 3).map((holiday) => (
                     <li key={holiday.date}>{holiday.date} - {holiday.localName}</li>
                   ))}
-                </ul>
+                </ul> 
               </div>
             )}
 

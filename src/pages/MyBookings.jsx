@@ -21,7 +21,7 @@ export default function MyBookings() {
     try {
       const token = await currentUser.getIdToken();
       const response = await fetch("/api/my-bookings", {
-        headers: { "Authorization": `Bearer ${token}` }
+        headers: { "Authorization": "Bearer " + token }
       });
       const data = await response.json();
 
@@ -47,7 +47,7 @@ export default function MyBookings() {
       const token = await currentUser.getIdToken();
       const response = await fetch(`/api/bookings/${encodeURIComponent(id)}`, {
         method: "DELETE",
-        headers: { "Authorization": `Bearer ${token}` }
+        headers: { "Authorization": "Bearer " + token }
       });
       const data = await response.json();
 

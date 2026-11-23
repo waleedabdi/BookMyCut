@@ -18,7 +18,7 @@ export default function Owner() {
 
       const token = await currentUser.getIdToken();
       const response = await fetch(`/api/owner/schedule?date=${encodeURIComponent(date)}`, {
-        headers: { "Authorization": `Bearer ${token}` }
+        headers: { "Authorization": "Bearer " + token }
       });
       
       const data = await response.json();
