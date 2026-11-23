@@ -1,41 +1,47 @@
-# BookMyCut 
+#  BookMyCut
 
- 
+BookMyCut is a modern salon and barbershop booking application. It allows customers to easily book appointments online without the hassle of phone calls or WhatsApp.Owners can log in to view their daily schedules in one place.
 
-A modern salon and barbershop booking application built with React, Tailwind CSS, and Firebase. 
+##  Project Links
+*   Live Deployment:[book-my-cut-blush.vercel.app]
+*   Figma Wireframe:[https://www.figma.com/proto/wpcZNFSaYHUVYCVyJdJkxH/Untitled?node-id=0-1&t=NZBxnDq8YQr96Ne8-1]
+*   GitHub Repository: [https://github.com/waleedabdi/BookMyCut.git]
 
- 
+## Screenshots
 
-## Features 
+### 1. Login & Authentication
+![Login page](./image-1.png)
+### 2. Booking Page & Holiday API
+![alt text](image-3.png)
+(Users select a service, pick a date, and see available time slots. The app fetches Kenyan Public Holidays to prevent booking on closed days).
 
-- Secure Authentication (Email/Password & Google) 
+### 3. My Bookings & Owner Dashboard
+![alt text](image-1.png)
+(Customers can view and cancel their bookings)
 
-- Real-time slot availability 
+##  Key Features
 
-- Custom Node.js API to prevent double-booking 
+* Register, log in and log out with email and password
+* Sign in with Google
+* Protected routes: pages for logged-in users redirect to the login page when you are signed out
+* Choose from six services, each with a price and duration
+* Pick a date and check which time slots are still available
+* Book an appointment (the server checks your Firebase login token before saving)
+* Upcoming public holidays are shown, and booking on a holiday is blocked
+* Responsive layout for phones, tablets and desktops
 
-- Integration with Kenya Public Holidays API 
+##  Tech Stack
+*   **Frontend:** React (Vite), Tailwind CSS, React Router
+*   **Backend API:** Node.js, Express.js
+*   **Database & Auth:** Firebase, Firestore
+*   **External API:** Nager.Date (Public Holidays)
 
-- Owner dashboard for schedule management 
+##  How to Run Locally
 
- 
-
-## 🛠️Tech Stack 
-
-- Frontend: React, Vite, Tailwind CSS 
-
-- Backend: Node.js, Express 
-- Database: Firebase Firestore 
-
-## Run locally
-
-The frontend reads Firebase web configuration from `.env.local` using the
-`VITE_FIREBASE_*` variables. The API reads the Firebase Admin credential from
-`src/server/serviceAccountKey.json`; keep that service-account file private and
-do not commit it.
-
-Run `npm install` once, then start the frontend and API together with
-`npm run dev`. The Vite development server proxies `/api` requests to the API
-on port 5000.
-
- 
+1. **Clone the repository:**
+   ```bash
+   git clone [https://github.com/waleedabdi/BookMyCut.git]
+   cd BookMyCut
+   
+## Author
+[Waleed Abdi]
