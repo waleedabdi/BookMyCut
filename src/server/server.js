@@ -4,13 +4,17 @@ import { applicationDefault, cert, getApps, initializeApp } from "firebase-admin
 import { getAuth } from "firebase-admin/auth";
 import { getFirestore } from "firebase-admin/firestore";
 import { readFileSync } from "node:fs";
+import { resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 
 const serviceAccountPath = fileURLToPath(new URL("./serviceAccountKey.json", import.meta.url));
+const serviceAccountJson = process.env.FIREBASE_SERVICE_ACCOUNT;
 const adminApp = getApps()[0] ?? initializeApp({
-  credential: process.env.GOOGLE_APPLICATION_CREDENTIALS
-    ? applicationDefault()
-    : cert(JSON.parse(readFileSync(serviceAccountPath, "utf8"))),
+  credential: serviceAccountJson
+    ? cert(JSON.parse(serviceAccountJson))
+    : process.env.GOOGLE_APPLICATION_CREDENTIALS
+      ? applicationDefault()
+      : cert(JSON.parse(readFileSync(serviceAccountPath, "utf8"))),
 });
 const adminAuth = getAuth(adminApp);
 const db = getFirestore(adminApp);
@@ -144,7 +148,11 @@ app.use((error, req, res, next) => {
   });
 });
 
-const port = Number(process.env.PORT) || 5000;
-app.listen(port, () => {
-  console.log(`BookMyCut API listening on port ${port}`);
-});
+export default app;
+
+if (process.argv[1] && fileURLToPath(import.meta.url) === resolve(process.argv[1])) {
+  const port = Number(process.env.PORT) || 5000;
+  app.listen(port, () => {
+    console.log(`BookMyCut API listening on port ${port}`);
+  });
+}

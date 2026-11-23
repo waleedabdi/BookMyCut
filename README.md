@@ -1,22 +1,22 @@
 #  BookMyCut
 
-BookMyCut is a modern salon and barbershop booking application. It allows customers to easily book appointments online without the hassle of phone calls or WhatsApp.Owners can log in to view their daily schedules in one place.
+BookMyCut is a modern salon and barbershop booking application. It allows customers to book appointments online, while salon owners can view their daily schedules in one place.
 
 ##  Project Links
-*   Live Deployment:[book-my-cut-blush.vercel.app]
-*   Figma Wireframe:[https://www.figma.com/proto/wpcZNFSaYHUVYCVyJdJkxH/Untitled?node-id=0-1&t=NZBxnDq8YQr96Ne8-1]
-*   GitHub Repository: [https://github.com/waleedabdi/BookMyCut.git]
+*   Live Deployment: [book-my-cut-blush.vercel.app](https://book-my-cut-blush.vercel.app)
+*   Figma Wireframe: [View the wireframe](https://www.figma.com/proto/wpcZNFSaYHUVYCVyJdJkxH/Untitled?node-id=0-1&t=NZBxnDq8YQr96Ne8-1)
+*   GitHub Repository: [waleedabdi/BookMyCut](https://github.com/waleedabdi/BookMyCut)
 
 ## Screenshots
 
 ### 1. Login & Authentication
 ![Login page](./image-1.png)
 ### 2. Booking Page & Holiday API
-![alt text](image-3.png)
+![Booking page](./image-2.png)
 (Users select a service, pick a date, and see available time slots. The app fetches Kenyan Public Holidays to prevent booking on closed days).
 
 ### 3. My Bookings & Owner Dashboard
-![alt text](image-1.png)
+![My bookings and owner dashboard](./image.png)
 (Customers can view and cancel their bookings)
 
 ##  Key Features
@@ -36,12 +36,25 @@ BookMyCut is a modern salon and barbershop booking application. It allows custom
 *   **Database & Auth:** Firebase, Firestore
 *   **External API:** Nager.Date (Public Holidays)
 
-##  How to Run Locally
+## How to Run Locally
 
 1. **Clone the repository:**
    ```bash
-   git clone [https://github.com/waleedabdi/BookMyCut.git]
+   git clone https://github.com/waleedabdi/BookMyCut.git
    cd BookMyCut
-   
-## Author
-[Waleed Abdi]
+   npm install
+   ```
+2. Create `.env.local` with the `VITE_FIREBASE_*` web configuration variables.
+3. Keep the Firebase Admin service-account JSON in `src/server/serviceAccountKey.json` (local only; do not commit it).
+4. Start the frontend and API together:
+   ```bash
+   npm run dev
+   ```
+
+## Vercel Deployment
+
+The Vercel deployment serves the frontend and the API routes under `/api`. Set
+the `VITE_FIREBASE_*` web configuration variables in the Vercel project
+environment. Also add `FIREBASE_SERVICE_ACCOUNT` with the complete Firebase
+Admin service-account JSON as a private environment variable. Redeploy after
+changing environment variables. Never commit the service-account JSON.

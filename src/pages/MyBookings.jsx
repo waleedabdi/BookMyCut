@@ -21,13 +21,13 @@ export default function MyBookings() {
     try {
       const token = await currentUser.getIdToken();
       const response = await fetch("/api/my-bookings", {
-        headers: { "Authorization": "Bearer " + token }
+        headers: { "Authorization": `Bearer ${token}` }
       });
       const data = await response.json();
 
       if (!response.ok) throw new Error(data.error || "Unable to load bookings.");
       setBookings(Array.isArray(data) ? data : []);
-    } catch {
+    } catch (error) {
       alert("Error loading bookings. Is your API running?");
       setBookings([]);
     } finally {
@@ -47,7 +47,7 @@ export default function MyBookings() {
       const token = await currentUser.getIdToken();
       const response = await fetch(`/api/bookings/${encodeURIComponent(id)}`, {
         method: "DELETE",
-        headers: { "Authorization": "Bearer " + token }
+        headers: { "Authorization": `Bearer ${token}` }
       });
       const data = await response.json();
 

@@ -1,9 +1,8 @@
 import { useEffect, useState } from "react";
-import { collection, getDocs, query, where } from "firebase/firestore";
 import { useAuth } from "../context/useAuth";
 import Navbar from "../components/Navbar";
 import ServiceCard from "../components/ServiceCard";
-import { auth, db } from "../firebase";
+import { auth } from "../firebase";
 
 const SERVICES = [
   { id: "1", name: "Haircut", price: 300, duration: "30 mins" },
@@ -68,15 +67,8 @@ export default function Home() {
       const data = await response.json();
       setAvailableSlots(Array.isArray(data) ? data : []);
     } catch {
-      try {
-        const bookingsQuery = query(collection(db, "bookings"), where("date", "==", date));
-        const snapshot = await getDocs(bookingsQuery);
-        const bookedTimes = snapshot.docs.map((booking) => booking.data().time);
-        setAvailableSlots(ALL_SLOTS.filter((time) => !bookedTimes.includes(time)));
-      } catch {
-        setAvailableSlots([]);
-        alert("Unable to load available slots. Please try again.");
-      }
+      setAvailableSlots([]);
+      alert("Unable to load available slots. Please try again.");
     } finally {
       setLoading(false);
     }
@@ -84,7 +76,7 @@ export default function Home() {
 
   const bookAppointment = async () => {
     if (!selectedService || !date || !selectedTime) {
-      alert("Please select a time!");
+      alert("Please select a service and a time!");
       return;
     }
 
@@ -102,7 +94,7 @@ export default function Home() {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          "Authorization": "Bearer " + token,
+          "Authorization": `Bearer ${token}`,
         },
         body: JSON.stringify({
           serviceName: selectedService.name,
@@ -121,7 +113,7 @@ export default function Home() {
       alert("Booking Successful!");
       setSelectedTime("");
       setSearched(false);
-      await checkSlots();
+      await checkSlots(); // Refresh slots
     } catch (error) {
       console.error("Booking failed:", error);
       alert("Something went wrong while booking. Please try again.");
@@ -191,7 +183,7 @@ export default function Home() {
                   {holidays.slice(0, 3).map((holiday) => (
                     <li key={holiday.date}>{holiday.date} - {holiday.localName}</li>
                   ))}
-                </ul> 
+                </ul>
               </div>
             )}
 
