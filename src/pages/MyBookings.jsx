@@ -3,6 +3,20 @@ import { useAuth } from "../context/useAuth";
 import Navbar from "../components/Navbar";
 import { auth } from "../firebase";
 
+async function loadBookings() {
+  const currentUser = auth.currentUser;
+  if (!currentUser) return [];
+
+  const token = await currentUser.getIdToken();
+  const response = await fetch("/api/my-bookings", {
+    headers: { "Authorization": `Bearer ${token}` }
+  });
+  const data = await response.json();
+
+  if (!response.ok) throw new Error(data.error || "Unable to load bookings.");
+  return Array.isArray(data) ? data : [];
+}
+
 export default function MyBookings() {
   const { user } = useAuth();
   const [bookings, setBookings] = useState([]);
@@ -10,24 +24,9 @@ export default function MyBookings() {
 
   const fetchBookings = async () => {
     setLoading(true);
-    const currentUser = auth.currentUser;
-
-    if (!currentUser) {
-      setBookings([]);
-      setLoading(false);
-      return;
-    }
-
     try {
-      const token = await currentUser.getIdToken();
-      const response = await fetch("/api/my-bookings", {
-        headers: { "Authorization": `Bearer ${token}` }
-      });
-      const data = await response.json();
-
-      if (!response.ok) throw new Error(data.error || "Unable to load bookings.");
-      setBookings(Array.isArray(data) ? data : []);
-    } catch (error) {
+      setBookings(await loadBookings());
+    } catch {
       alert("Error loading bookings. Is your API running?");
       setBookings([]);
     } finally {
@@ -36,7 +35,26 @@ export default function MyBookings() {
   };
 
   useEffect(() => {
-    fetchBookings();
+    let active = true;
+
+    loadBookings()
+      .then((data) => {
+        if (active) {
+          setBookings(data);
+          setLoading(false);
+        }
+      })
+      .catch(() => {
+        if (active) {
+          alert("Error loading bookings. Is your API running?");
+          setBookings([]);
+          setLoading(false);
+        }
+      });
+
+    return () => {
+      active = false;
+    };
   }, []);
 
   const handleCancel = async (id) => {

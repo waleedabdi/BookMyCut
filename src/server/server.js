@@ -3,22 +3,12 @@ import express from "express";
 import { applicationDefault, cert, getApps, initializeApp } from "firebase-admin/app";
 import { getAuth } from "firebase-admin/auth";
 import { getFirestore } from "firebase-admin/firestore";
-import { readFileSync } from "node:fs";
+import { existsSync, readFileSync } from "node:fs";
 import { resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 
 const serviceAccountPath = fileURLToPath(new URL("./serviceAccountKey.json", import.meta.url));
 const serviceAccountJson = process.env.FIREBASE_SERVICE_ACCOUNT;
-const adminApp = getApps()[0] ?? initializeApp({
-  credential: serviceAccountJson
-    ? cert(JSON.parse(serviceAccountJson))
-    : process.env.GOOGLE_APPLICATION_CREDENTIALS
-      ? applicationDefault()
-      : cert(JSON.parse(readFileSync(serviceAccountPath, "utf8"))),
-});
-const adminAuth = getAuth(adminApp);
-const db = getFirestore(adminApp);
-const bookings = db.collection("bookings");
 const app = express();
 const slots = ["09:00", "10:00", "11:00", "12:00", "13:00", "14:00", "15:00", "16:00"];
 const ownerEmail = (process.env.OWNER_EMAIL || "owner@bookmycut.com").toLowerCase();
@@ -28,6 +18,40 @@ class HttpError extends Error {
     super(message);
     this.status = status;
   }
+}
+
+let firebaseServices;
+
+function getFirebaseServices() {
+  if (firebaseServices) return firebaseServices;
+
+  let credential;
+  try {
+    if (serviceAccountJson) {
+      credential = cert(JSON.parse(serviceAccountJson));
+    } else if (process.env.GOOGLE_APPLICATION_CREDENTIALS) {
+      credential = applicationDefault();
+    } else if (existsSync(serviceAccountPath)) {
+      credential = cert(JSON.parse(readFileSync(serviceAccountPath, "utf8")));
+    } else {
+      throw new HttpError(
+        503,
+        "Firebase Admin credentials are not configured for this deployment.",
+      );
+    }
+  } catch (error) {
+    if (error instanceof HttpError) throw error;
+    throw new HttpError(503, "Firebase Admin credentials could not be loaded.");
+  }
+
+  const adminApp = getApps()[0] ?? initializeApp({ credential });
+  const db = getFirestore(adminApp);
+  firebaseServices = {
+    adminAuth: getAuth(adminApp),
+    db,
+    bookings: db.collection("bookings"),
+  };
+  return firebaseServices;
 }
 
 app.use(cors());
@@ -51,6 +75,7 @@ async function authenticate(req, res, next) {
   const match = authorization.match(/^Bearer\s+(.+)$/i);
   if (!match) return next(new HttpError(401, "Authentication is required."));
 
+  const { adminAuth } = getFirebaseServices();
   try {
     req.user = await adminAuth.verifyIdToken(match[1]);
     return next();
@@ -66,9 +91,17 @@ function requireOwner(req, res, next) {
   return next();
 }
 
-app.get("/api/health", (req, res) => res.json({ status: "ok" }));
+app.get("/api/health", (req, res, next) => {
+  try {
+    getFirebaseServices();
+    return res.json({ status: "ok" });
+  } catch (error) {
+    return next(error);
+  }
+});
 
 app.get("/api/slots", requireDate, async (req, res) => {
+  const { bookings } = getFirebaseServices();
   const snapshot = await bookings.where("date", "==", req.query.date).get();
   const bookedTimes = new Set(snapshot.docs.map((booking) => booking.get("time")));
   res.json(slots.filter((time) => !bookedTimes.has(time)));
@@ -84,6 +117,7 @@ app.post("/api/book", authenticate, async (req, res) => {
   }
 
   const bookingId = `${date}_${time.replace(":", "-")}`;
+  const { db, bookings } = getFirebaseServices();
   const bookingRef = bookings.doc(bookingId);
   await db.runTransaction(async (transaction) => {
     const existingBooking = await transaction.get(bookingRef);
@@ -112,6 +146,7 @@ app.post("/api/book", authenticate, async (req, res) => {
 });
 
 app.get("/api/my-bookings", authenticate, async (req, res) => {
+  const { bookings } = getFirebaseServices();
   const snapshot = await bookings.where("userId", "==", req.user.uid).get();
   const userBookings = snapshot.docs
     .map((booking) => ({ id: booking.id, ...booking.data() }))
@@ -120,6 +155,7 @@ app.get("/api/my-bookings", authenticate, async (req, res) => {
 });
 
 app.delete("/api/bookings/:id", authenticate, async (req, res) => {
+  const { bookings } = getFirebaseServices();
   const bookingRef = bookings.doc(req.params.id);
   const booking = await bookingRef.get();
   if (!booking.exists) throw new HttpError(404, "Booking not found.");
@@ -132,6 +168,7 @@ app.delete("/api/bookings/:id", authenticate, async (req, res) => {
 });
 
 app.get("/api/owner/schedule", authenticate, requireOwner, requireDate, async (req, res) => {
+  const { bookings } = getFirebaseServices();
   const snapshot = await bookings.where("date", "==", req.query.date).get();
   const schedule = snapshot.docs
     .map((booking) => ({ id: booking.id, ...booking.data() }))
@@ -144,7 +181,11 @@ app.use((error, req, res, next) => {
   const status = error.status || 500;
   if (status >= 500) console.error(error);
   return res.status(status).json({
-    error: status >= 500 ? "The server could not complete the request." : error.message,
+    error: status === 503
+      ? error.message
+      : status >= 500
+        ? "The server could not complete the request."
+        : error.message,
   });
 });
 
