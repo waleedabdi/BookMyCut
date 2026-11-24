@@ -1,8 +1,9 @@
 import { useEffect, useState } from "react";
+import { collection, getDocs, query, where } from "firebase/firestore";
 import { useAuth } from "../context/useAuth";
 import Navbar from "../components/Navbar";
 import ServiceCard from "../components/ServiceCard";
-import { auth } from "../firebase";
+import { auth, db } from "../firebase";
 
 const SERVICES = [
   { id: "1", name: "Haircut", price: 300, duration: "30 mins" },
@@ -67,8 +68,15 @@ export default function Home() {
       const data = await response.json();
       setAvailableSlots(Array.isArray(data) ? data : []);
     } catch {
-      setAvailableSlots([]);
-      alert("Unable to load available slots. Please try again.");
+      try {
+        const bookingsQuery = query(collection(db, "bookings"), where("date", "==", date));
+        const snapshot = await getDocs(bookingsQuery);
+        const bookedTimes = snapshot.docs.map((booking) => booking.data().time);
+        setAvailableSlots(ALL_SLOTS.filter((time) => !bookedTimes.includes(time)));
+      } catch {
+        setAvailableSlots([]);
+        alert("Unable to load available slots. Please try again.");
+      }
     } finally {
       setLoading(false);
     }
